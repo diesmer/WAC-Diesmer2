@@ -1,0 +1,343 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<link rel="stylesheet" type="text/css" href="../css/style.css">
+	<title>Landen Bewerken</title>
+</head>
+
+<body>
+	<div id="login">
+		<form id="loginform">
+			<table>
+			<tr>
+				<td>
+					Username: 
+				</td>
+				<td>
+					<input type="text" name="username"/>
+				</td>
+			</tr>
+			<tr>
+				<td>
+					Password: 
+				</td>
+				<td>
+					<input type="password" name="password"/>
+				</td>
+			</tr>
+			<tr>
+				<td>
+					<input type="submit" id="loginButton" name="submit" value="Login"/>
+				</td>
+			</tr>
+			</table>
+		</form>
+	</div>
+	<div id="editor" hidden>
+		<div class="centred" id="wrapper">
+			<h1 class="title">Bewerken</h1>
+			<div id="countryEdit" class="data-object">
+				<form id="editForm">
+					<input type="text" value="" name="new" hidden/>
+					<table>
+						<tr>
+							<td>
+								iso2Code
+							</td>
+							<td>
+								<input type="text" value="" name="iso2code" disabled/>
+							</td>
+						</tr>
+						<tr>
+							<td>
+								iso3Code
+							</td>
+							<td>
+								<input type="text" value="" name="iso3code" disabled/>
+							</td>
+						</tr>
+						<tr>
+							<td>
+								name
+							</td>
+							<td>
+								<input type="text" value="" name="name"/>
+							</td>
+						</tr>
+						<tr>
+							<td>
+								capital
+							</td>
+							<td>
+								<input type="text" value="" name="capital"/>
+							</td>
+						</tr>
+						<tr>
+							<td>
+								continent
+							</td>
+							<td>
+								<input type="text" value="" name="continent"/>
+							</td>
+						</tr>
+						<tr>
+							<td>
+								region
+							</td>
+							<td>
+								<input type="text" value="" name="region"/>
+							</td>
+						</tr>
+						<tr>
+							<td>
+								surface
+							</td>
+							<td>
+								<input type="number" value="" name="surface"/>
+							</td>
+						</tr>
+						<tr>
+							<td>
+								population
+							</td>
+							<td>
+								<input type="number" value="" name="population"/>
+							</td>
+						</tr>
+						<tr>
+							<td>
+								government
+							</td>
+							<td>
+								<input type="text" value="" name="government"/>
+							</td>
+						</tr>
+						<tr>
+							<td>
+								latitude
+							</td>
+							<td>
+								<input type="number" value="" name="lat"/>
+							</td>
+						</tr>
+						<tr>
+							<td>
+								longitude
+							</td>
+							<td>
+								<input type="number" value="" name="lon"/>
+							</td>
+						</tr>
+					</table>
+					<button id="submitButton">Opslaan</button>
+				</form>
+			</div>
+		</div>
+	</div>
+	<div id="countrySelector" hidden>
+		<div id="wrapper">
+			<h1 class="title">Alle Landen</h1>
+			<div id="countryList" class="data-object">
+				<button id="newButton">Nieuw</button>
+				<table id="countryListTable" class="nice-table">
+					<tr>
+						<th>Landnaam</th>
+						<th>ISO3</th>
+						<th>Selecteer</th>
+						<th>Verwijderen</th>
+					</tr>
+				</table>
+			</div>
+		</div>
+	</div>
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+	<script>
+	var getUrlParameter = function getUrlParameter(sParam) {
+		var sPageURL = decodeURIComponent(window.location.search.substring(1)),
+		sURLVariables = sPageURL.split('&'),
+		sParameterName,
+		i;
+
+		for (i = 0; i < sURLVariables.length; i++) {
+			sParameterName = sURLVariables[i].split('=');
+
+			if (sParameterName[0] === sParam) {
+				return sParameterName[1] === undefined ? true : sParameterName[1];
+			}
+		}
+	};
+
+	var hasParam = (typeof getUrlParameter('country') != 'undefined') ? getUrlParameter('country') : "";
+	var hasDelete = (typeof getUrlParameter('delete') != 'undefined') ? getUrlParameter('delete') : "";
+	var getCountriesURI = "../restservices/countries";
+
+	$(document).ready(function()
+	{
+		if (sessionStorage.getItem('sessionToken') != null)
+		{
+			$("div#login").hide();
+			$("div#countrySelector").show();
+		
+			initPage();
+		}
+	});
+
+	function getCountryData()
+	{
+		var jqxhr = $.getJSON(getCountriesURI+"/"+hasParam, function(data) 
+		{
+			$("input[name='iso2code']").val(data.code);
+			$("input[name='iso3code']").val(data.iso3);
+
+			$("input[name='name']").val(data.name);
+			$("input[name='capital']").val(data.capital);
+			$("input[name='continent']").val(data.continent);
+			$("input[name='region']").val(data.region);
+			$("input[name='surface']").val(data.surface);
+			$("input[name='population']").val(data.population);
+			$("input[name='government']").val(data.government);
+			$("input[name='lat']").val(data.lat);
+			$("input[name='lon']").val(data.lon);
+			$("#editor").show();
+		});
+	}
+
+	function loadCountries()
+	{
+		var jqxhr = $.getJSON(getCountriesURI, function(data) 
+		{
+			$.each(data, function(key, value)
+			{
+				var tempstring = 
+				"<td>" + value.name + "</td><td>" + value.iso3 + "</td>" + 
+				"<td><a class='button' href='?country=" + value.code + "'>V</a></td>" +
+				"<td><a class='button' href='?delete=" + value.code + "'>X</a></td>";
+				$("#countryListTable").find('tbody').append("<tr>" + tempstring + "</tr>");
+			});
+		});
+	}
+
+	$("input#loginButton").click(function(e)
+	{
+		e.preventDefault();
+
+		var call = $.ajax({
+			url: '../restservices/authentication',
+			type: 'POST',
+			data: {'username' : $("input[name='username']").val(), 'password' : $("input[name='password']").val()},
+
+			success: function(result) 
+			{
+				sessionStorage.setItem('sessionToken', result);
+				$("div#login").hide();
+				$("div#countrySelector").show();
+				initPage();
+			}
+		});
+	});
+
+
+	$("button#newButton").click(function()
+	{
+		$("input[name='new']").val('true');
+		$("input[name='iso2code']").val('');
+		$("input[name='iso3code']").val('');
+		$("input[name='name']").val('');
+		$("input[name='capital']").val('');
+		$("input[name='continent']").val('');
+		$("input[name='region']").val('');
+		$("input[name='surface']").val('');
+		$("input[name='population']").val('');
+		$("input[name='government']").val('');
+		$("input[name='lat']").val('');
+		$("input[name='lon']").val('');
+		$("input[name='iso2code']").prop("disabled", false);
+		$("input[name='iso3code']").prop("disabled", false);
+		$("#editor").show();
+	});
+
+	$("button#submitButton").click(function(e)
+	{
+		e.preventDefault();
+
+		var form_data = $("input[name='iso2code']").val() + ',' + 
+		 $("input[name='iso3code']").val() + ',' + 
+		$("input[name='name']").val() + ',' + 
+		$("input[name='capital']").val() + ',' + 
+		$("input[name='continent']").val() + ',' + 
+		$("input[name='region']").val() + ',' + 
+		$("input[name='surface']").val() + ',' + 
+		$("input[name='population']").val() + ',' + 
+		$("input[name='government']").val() + ',' + 
+		$("input[name='lat']").val() + ',' + 
+		$("input[name='lon']").val();
+
+		if ($("input[name='new']").val() == 'true')
+		{
+			var call = $.ajax({
+				url: getCountriesURI + '/new',
+				type: 'POST',
+				data: form_data,
+				dataType: 'application/json',
+	            contentType: "application/json",
+	            headers: {
+					"Authorization": sessionStorage.getItem('sessionToken')
+			  	},
+
+				success: function(result) 
+				{
+					alert("[[ISO2] " + hasParam + "] is toegevoegd");
+					location.reload();
+				}
+			});
+		}
+		else
+		{
+			var call = $.ajax({
+				url: getCountriesURI + '/update/'+hasParam,
+				type: 'PUT',
+				data: form_data,
+				dataType: 'application/json',
+	            contentType: "application/json",
+				headers: {
+					"Authorization": sessionStorage.getItem('sessionToken')
+			  	},
+
+				success: function(result) 
+				{
+					alert("[[ISO2] " + hasParam + "] is geupdatet");
+					location.reload();
+				}
+			});
+		}
+	});
+
+	function initPage()
+	{
+		if (hasDelete != "")
+		{
+			if (confirm("Weet je zeker dat je [[ISO2] " + hasDelete + "] wilt verwijderen?"))
+			{
+				var call = $.ajax({
+					url: getCountriesURI + '/delete/'+hasDelete,
+					type: 'DELETE',
+					success: function(result) 
+					{
+						alert("[[ISO2] " + hasDelete + "] is verwijderd");
+						location.reload();
+					}
+				});
+			}
+		}
+		
+		if (hasParam != "")
+		{
+			getCountryData();
+		}
+		loadCountries();
+	}
+</script>
+</body>
+</html>

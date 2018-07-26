@@ -1,0 +1,21 @@
+body {
+	background-color: grey;
+	}
+	
+#header1 {
+	color: white;
+	background-color: #a0998d;
+}
+
+#header2 {
+	color: white;
+	background-color: #a0998d;
+}
+
+.cell {
+	cursor: cell;
+}
+
+#mijnTabel tr:hover {
+    background-color: white;
+}
